@@ -1,5 +1,7 @@
 package com.example.munch;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -7,12 +9,20 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,12 +31,14 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 
-public class HomeActivity extends AppCompatActivity implements View.OnClickListener{
+public class HomeActivity extends BaseMenuActivity implements View.OnClickListener{
 
     private Button searchMovieButton;
     private Button randomShowBtn;
     private ProgressBar progressBar;
+    private TextView welcomeTxt;
 
     private RequestQueue queue;
     private APIHelper apiHelper;
@@ -52,22 +64,33 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private Boolean attemptedMovieGenreRetrieval;
     private Boolean attemptedTVGenreRetrieval;
     private Boolean attemptedProviderRetrieval;
-    
+
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore mStore;
+    private String userID;
+    private ListenerRegistration registration;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        
+
         // Initialise the queue object for making API calls
         queue = Volley.newRequestQueue(this);
 
+        mAuth = FirebaseAuth.getInstance();
+        mStore = FirebaseFirestore.getInstance();
+        userID = mAuth.getCurrentUser().getUid();
+
         searchMovieButton = findViewById(R.id.searchShowBtn);
-        searchMovieButton.setVisibility(View.GONE);
-
         randomShowBtn = findViewById(R.id.randomShowBtn);
-        randomShowBtn.setVisibility(View.GONE);
-
         progressBar = findViewById(R.id.loadingConfigsBar);
+        welcomeTxt = findViewById(R.id.welcomeTxt);
+
+        searchMovieButton.setVisibility(View.GONE);
+        randomShowBtn.setVisibility(View.GONE);
+        welcomeTxt.setVisibility(View.GONE);
 
         apiHelper = new APIHelper();
         dbHelper = new DBHelper(this);
@@ -115,6 +138,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStop () {
         super.onStop();
+        if (registration != null) {
+            registration.remove();
+            registration = null;
+        }
         if (queue != null) {
             queue.cancelAll(TAG_SEARCH_SHOW);
             queue.cancelAll(TAG_TV_GENRE);
@@ -130,15 +157,49 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 && attemptedImageConfigRetrieval
                 && attemptedProviderRetrieval) {
 
-            // Hide loader
-            progressBar.setVisibility(View.INVISIBLE);
+            DocumentReference userDataDoc = mStore.collection("users").document(userID);
+            registration = userDataDoc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                    if (documentSnapshot != null) {
+                        // Generate and display welcome message
+                        String firstName = documentSnapshot.getString("FirstName");
+                        String accountType = documentSnapshot.getString("AccountType");
+                        welcomeTxt.setVisibility(View.VISIBLE);
 
-            // prepare buttons
-            searchMovieButton.setVisibility(View.VISIBLE);
-            searchMovieButton.setOnClickListener(this);
+                        String unknownMessage = "Don't know who you are, soz bro";
+                        String welcomeMessage;
+                        if (accountType != null) {
+                            if (accountType.equals("standard")) {
+                                if (firstName != null) {
+                                    welcomeMessage = "Welcome " + firstName;
+                                } else {
+                                    welcomeMessage = unknownMessage;
+                                }
+                            } else if (accountType.equals("special")) {
+                                welcomeMessage = "Heya";
+                            } else {
+                                welcomeMessage = unknownMessage;
+                            }
+                        } else {
+                            welcomeMessage = unknownMessage;
+                        }
 
-            randomShowBtn.setVisibility(View.VISIBLE);
-            randomShowBtn.setOnClickListener(this);
+                        welcomeTxt.setText(welcomeMessage);
+                    }
+
+                    // Hide loader
+                    progressBar.setVisibility(View.INVISIBLE);
+
+                    // Prepare buttons
+                    searchMovieButton.setVisibility(View.VISIBLE);
+                    searchMovieButton.setOnClickListener(HomeActivity.this);
+
+                    randomShowBtn.setVisibility(View.VISIBLE);
+                    randomShowBtn.setOnClickListener(HomeActivity.this);
+
+                }
+            });
         }
     }
 

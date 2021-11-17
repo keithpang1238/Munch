@@ -11,18 +11,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Munch">
+        <activity android:name=".BaseMenuActivity" />
         <activity
             android:name=".RandomShowActivity"
-            android:parentActivityName=".HomeActivity">
-        </activity>
+            android:parentActivityName=".HomeActivity" />
         <activity android:name=".APIHelper" />
         <activity
             android:name=".SearchMovieActivity"
-            android:parentActivityName=".HomeActivity"
-            android:exported="true" />
-        <activity
-            android:name=".HomeActivity"
-            android:exported="true" />
+            android:parentActivityName=".HomeActivity" />
+        <activity android:name=".HomeActivity" />
         <activity
             android:name=".LoginActivity"
             android:exported="true">

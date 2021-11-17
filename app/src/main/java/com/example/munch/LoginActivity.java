@@ -16,6 +16,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.Objects;
+
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
 
     private Button loginBtn;
@@ -27,6 +29,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Objects.requireNonNull(this.getSupportActionBar()).hide();
+
         mAuth = FirebaseAuth.getInstance();
 
         loginBtn = findViewById(R.id.loginBtn);

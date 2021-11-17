@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-public class RandomShowActivity extends AppCompatActivity implements View.OnClickListener{
+public class RandomShowActivity extends BaseMenuActivity implements View.OnClickListener{
 
     private JSONArray showArray;
     private Integer numViewed;

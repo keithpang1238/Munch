@@ -31,7 +31,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.StringJoiner;
 
-public class SearchMovieActivity extends AppCompatActivity {
+public class SearchMovieActivity extends BaseMenuActivity {
 
     private Map<String, String> searchPayload;
 
@@ -40,10 +40,6 @@ public class SearchMovieActivity extends AppCompatActivity {
     private HashMap<String, String> tvGenres;
     private HashMap<String, String> imageConfigs;
     private HashMap<String, String> providers;
-
-    private final String API = "&api_key=" + BuildConfig.movieAPIKey;
-    private final String URL_PREFIX_MOVIE_GENRE = "https://api.themoviedb.org/3/genre/movie/list??";
-    private final String URL_PREFIX_TV_GENRE = "https://api.themoviedb.org/3/genre/tv/list??";
 
     private String selectedGenresString;   // Pipe-separated string of genre ids
     private String selectedProvidersString;
