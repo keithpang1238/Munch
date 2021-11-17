@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="How many of these have you bought"
+            android:text="Which streaming services do you use?"
             android:textAlignment="center"
             android:layout_marginBottom="20dp"
             android:layout_marginTop="20dp"
