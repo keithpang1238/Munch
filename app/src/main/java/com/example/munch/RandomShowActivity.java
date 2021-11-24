@@ -37,7 +37,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private Integer currTVPage;
     private Boolean attemptedToGetMoviePages;
     private Boolean attemptedToGetTVPages;
-    private final Integer MAX_PAGES = 30;
+    private final Integer MAX_PAGES = 15;
     private Boolean randomIsMovie;
     private Boolean userGivenIsMovie;
 
