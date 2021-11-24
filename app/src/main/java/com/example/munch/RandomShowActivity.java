@@ -51,8 +51,6 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private final String URL_PREFIX_CONFIG = "https://api.themoviedb.org/3/configuration?";
     private final String API = "&api_key=" + BuildConfig.movieAPIKey;
     private final String REGION = "&watch_region=AU";
-    private String genreString;
-    private String providerString;
 
     private final String DEFAULT_URL_IMAGE_PREFIX = "https://image.tmdb.org/t/p/original/";
     private String url_image_prefix;
@@ -62,7 +60,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
 
     private DBHelper dbHelper;
     private Map<String, String> imageConfigs;
-
+    private Map<String, String> apiParams;
 
 
 
@@ -86,8 +84,6 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         loadingShowFetchBar = findViewById(R.id.loadingShowFetchBar);
         loadingShowFetchBar.setVisibility(View.VISIBLE);
 
-        genreString = "";
-        providerString = "";
 
         Intent intent = getIntent();
 
@@ -98,14 +94,11 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             url_image_prefix = DEFAULT_URL_IMAGE_PREFIX;
         }
 
+        apiParams = (HashMap<String, String>) intent.getSerializableExtra("apiParams");
+
+
         Bundle extras = intent.getExtras();
         if (extras != null) {
-            if (extras.containsKey("genres")) {
-                genreString = "&with_genres=" + extras.getString("genres");
-            }
-            if (extras.containsKey("providers")) {
-                providerString = "&with_watch_providers=" + extras.getString("providers");
-            }
             if (extras.containsKey("isMovie")) {
                 userGivenIsMovie = extras.getBoolean("isMovie");
             }
@@ -169,7 +162,6 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         numViewed = 0;
         String URL_PREFIX;
         String pageString = "";
-        final String voteString = "&vote_average.gte=2";
 
 
         if (isMovie) {
@@ -187,7 +179,14 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             }
         }
 
-        String url = URL_PREFIX + API + pageString + voteString + genreString + providerString + REGION;
+        StringBuilder urlBuilder = new StringBuilder(URL_PREFIX + API + pageString + REGION);
+        if (apiParams != null) {
+            for (String key : apiParams.keySet()) {
+                urlBuilder.append(apiParams.get(key));
+            }
+        }
+        String url = urlBuilder.toString();
+
         queue.cancelAll(TAG_SEARCH_SHOW);
 
         StringRequest stringRequest = apiHelper.movieTVAPICall(url, this,
@@ -203,7 +202,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
                                 replaceFragment(showArray.getJSONObject(0));
                             }
                             else {
-                                Toast.makeText(RandomShowActivity.this, "No response", Toast.LENGTH_LONG).show();
+                                Toast.makeText(RandomShowActivity.this, "Requirements too strict ma dude", Toast.LENGTH_LONG).show();
                             }
                             if (loadingShowFetchBar != null) {
                                 loadingShowFetchBar.setVisibility(View.INVISIBLE);

@@ -28,7 +28,7 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Find a movie"
+            android:text="Find a show"
             android:layout_marginRight="75dp"
             android:layout_marginLeft="75dp"
             android:id="@+id/searchShowBtn"/>
@@ -36,7 +36,7 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Let RNGesus Decide"
+            android:text="I'm feeling lucky"
             android:layout_below="@id/searchShowBtn"
             android:layout_marginTop="20dp"
             android:layout_marginRight="75dp"
