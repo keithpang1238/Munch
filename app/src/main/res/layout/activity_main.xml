@@ -4,42 +4,65 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
     tools:context=".LoginActivity">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/holly_header"
+        android:layout_alignTop="@id/mainLoginLayout"
+        android:adjustViewBounds="true"
+        android:id="@+id/hollyImage"
+        android:visibility="invisible"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginLeft="50dp"
         android:layout_marginRight="50dp"
-        android:layout_centerInParent="true">
+        android:gravity="center"
+        android:id="@+id/mainLoginLayout">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/usernameEdit"
-        android:hint="Username"
-        />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/usernameEdit"
+            android:hint="Username"
+            />
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/passwordEdit"
-        android:hint="Password"
-        android:layout_centerInParent="true"
-        android:layout_below="@id/usernameEdit"
-        android:inputType="textPassword"
-        android:layout_marginTop="10dp"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/passwordEdit"
+            android:hint="Password"
+            android:layout_centerInParent="true"
+            android:layout_below="@id/usernameEdit"
+            android:inputType="textPassword"
+            android:layout_marginTop="10dp"/>
 
-    <Button
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/loginBtn"
+            android:text="Login"
+            android:layout_below="@id/passwordEdit"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"/>
+
+    </RelativeLayout>
+
+    <pl.droidsonroids.gif.GifImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/loginBtn"
-        android:text="Login"
-        android:layout_below="@id/passwordEdit"
+        android:src="@drawable/santa_gif3"
+        android:layout_alignBottom="@+id/mainLoginLayout"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"/>
-        
-    </RelativeLayout>
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="30dp"
+        android:id="@+id/santaGif"
+        android:visibility="invisible"/>
+
 
 
 </RelativeLayout>

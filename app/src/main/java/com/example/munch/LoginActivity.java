@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -16,11 +17,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.Calendar;
 import java.util.Objects;
+
+import pl.droidsonroids.gif.GifImageView;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private Button loginBtn;
     private EditText usernameEdit;
     private EditText passwordEdit;
     private FirebaseAuth mAuth;
@@ -34,11 +37,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         mAuth = FirebaseAuth.getInstance();
 
-        loginBtn = findViewById(R.id.loginBtn);
+        Button loginBtn = findViewById(R.id.loginBtn);
         usernameEdit = findViewById(R.id.usernameEdit);
         passwordEdit = findViewById(R.id.passwordEdit);
-
         loginBtn.setOnClickListener(this);
+
+        if (isChristmasPeriod()) {
+            ImageView holly = findViewById(R.id.hollyImage);
+            holly.setVisibility(View.VISIBLE);
+            GifImageView santaGif = findViewById(R.id.santaGif);
+            santaGif.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -78,6 +87,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
             }
         );
+    }
+
+    private boolean isChristmasPeriod() {
+        Calendar calendar = Calendar.getInstance();
+        int month  = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        return month == 11 || (month == 10 && day > 22) || (month == 0 && day < 5);
     }
 
 
