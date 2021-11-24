@@ -186,6 +186,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             }
         }
         String url = urlBuilder.toString();
+        System.out.println(url);
 
         queue.cancelAll(TAG_SEARCH_SHOW);
 
@@ -212,7 +213,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
                         else if (responseJSON.has("total_pages")) {
                             try {
                                 Integer total = responseJSON.getInt("total_pages");
-                                total = Math.max(total, MAX_PAGES);
+                                total = Math.min(total, MAX_PAGES);
                                 if (isMovie && !attemptedToGetMoviePages) {
                                     attemptedToGetMoviePages = true;
                                     if (moviePageNumbers == null) {
@@ -266,7 +267,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             e.printStackTrace();
             Toast.makeText(RandomShowActivity.this, "Could not load image", Toast.LENGTH_SHORT).show();
         }
-        ShowDisplayFragment fragment = ShowDisplayFragment.newInstance(movieObject.toString(), randomIsMovie);
+        ShowDisplayFragment fragment = ShowDisplayFragment.newInstance(replaceDateWithYear(movieObject).toString(), randomIsMovie);
         fragment.setOnClickListener(new FragmentClickListener(){
             @Override
             public void onClick(View v) {
@@ -305,6 +306,25 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
                 newShowFetch(getIsMovie());
             }
         }
+    }
+
+    private JSONObject replaceDateWithYear(JSONObject obj) {
+        String movieTextToDisplay = obj.optString("release_date");
+        String tvTextToDisplay = obj.optString("first_air_date");
+        if (movieTextToDisplay.length() >= 4) {
+            try {
+                obj.put("release_date", movieTextToDisplay.substring(0, 4));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else if (tvTextToDisplay.length() >= 4) {
+            try {
+                obj.put("first_air_date", tvTextToDisplay.substring(0, 4));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return obj;
     }
 
     void displayOverviewPopup(View v, String overview) {

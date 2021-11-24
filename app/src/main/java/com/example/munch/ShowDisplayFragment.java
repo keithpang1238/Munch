@@ -110,6 +110,8 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
                 } catch (JSONException e) {
                     Toast.makeText(this.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
+            } else {
+                posterImage.setImageResource(R.drawable.no_image_found);
             }
         }
         return rootView;
