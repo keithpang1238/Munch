@@ -18,7 +18,7 @@
         android:id="@+id/random_movie_content_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="100dp"/>
+        android:layout_marginBottom="80dp"/>
 
     <Button
         android:layout_width="wrap_content"

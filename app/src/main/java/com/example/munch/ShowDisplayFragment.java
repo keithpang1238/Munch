@@ -28,6 +28,7 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "showJSONObjectString";
     private static final String ARG_PARAM2 = "isMovie";
+    private static final String ARG_PARAM3 = "isLiked";
 
     private JSONObject showJSONObject;
     private FragmentClickListener listener;
@@ -39,6 +40,7 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
     private ImageView posterImage;
 
     private Boolean isMovie;
+    private Boolean isLiked;
 
     public ShowDisplayFragment() {
         // Required empty public constructor
@@ -52,11 +54,12 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
      * @return A new instance of fragment ShowDisplayFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static ShowDisplayFragment newInstance(String showObjectString, Boolean isMovie) {
+    public static ShowDisplayFragment newInstance(String showObjectString, Boolean isMovie, Boolean isLiked) {
         ShowDisplayFragment fragment = new ShowDisplayFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, showObjectString);
         args.putString(ARG_PARAM2, isMovie.toString());
+        args.putString(ARG_PARAM3, isLiked.toString());
         fragment.setArguments(args);
         return fragment;
     }
@@ -68,6 +71,7 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
             try {
                 showJSONObject = new JSONObject(getArguments().getString(ARG_PARAM1));
                 isMovie = Boolean.parseBoolean(getArguments().getString(ARG_PARAM2));
+                isLiked = Boolean.parseBoolean(getArguments().getString(ARG_PARAM3));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -79,6 +83,18 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_show_display, container, false);
+
+        ImageView likeButton = rootView.findViewById(R.id.likeButton);
+
+        if (isLiked) {
+            likeButton.setImageResource(R.drawable.like_button_filled);
+            likeButton.setTag(R.drawable.like_button_filled);
+        } else {
+            likeButton.setImageResource(R.drawable.like_button);
+            likeButton.setTag(R.drawable.like_button);
+        }
+
+        likeButton.setOnClickListener(this);
 
         if (showJSONObject != null) {
             movieTitleTxt = rootView.findViewById(R.id.movieTitleTxt);
@@ -127,15 +143,6 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
         }
     }
 
-    private Boolean isOverviewEllipsized() {
-        Layout l = overviewTxt.getLayout();
-        if (l != null) {
-            int lines = l.getLineCount();
-            return lines > 0 && l.getEllipsisCount(lines-1) > 0;
-        }
-        return false;
-    }
-
     public void setOnClickListener(FragmentClickListener listener)
     {
         this.listener = listener;
@@ -143,8 +150,6 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.overviewTxt && isOverviewEllipsized() && listener != null) {
-            listener.onClick(view);
-        }
+        listener.onClick(view);
     }
 }

@@ -6,17 +6,36 @@
     tools:context=".ShowDisplayFragment"
     android:layout_centerInParent="true">
 
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/movieTitleTxt"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
+    <LinearLayout
         android:layout_marginTop="10dp"
-        />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/headerLayout"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/movieTitleTxt"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
+            />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:contentDescription="Like button"
+            android:id="@+id/likeButton"
+            android:scaleType="center"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
 
     <ImageView
         android:layout_width="match_parent"
@@ -26,7 +45,7 @@
         android:layout_marginBottom="110dp"
         android:layout_marginTop="20dp"
         android:id="@+id/posterImage"
-        android:layout_below="@id/movieTitleTxt"/>
+        android:layout_below="@id/headerLayout"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,7 +69,9 @@
                 android:layout_height="match_parent"
                 android:scaleType="center"
                 android:id="@+id/ratingStarImg"
-                android:src="@drawable/rating_star"/>
+                android:src="@drawable/rating_star"
+                android:contentDescription="Star rating symbol"/>
+
             <TextView
                 android:layout_marginStart="5dp"
                 android:layout_width="wrap_content"

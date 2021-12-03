@@ -1,5 +1,7 @@
 package com.example.munch;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
@@ -7,22 +9,41 @@ import androidx.fragment.app.FragmentManager;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -40,6 +61,9 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private final Integer MAX_PAGES = 15;
     private Boolean randomIsMovie;
     private Boolean userGivenIsMovie;
+    private JSONObject currShow;
+    private String currShowID;
+    private Boolean currShowIsMovie;
 
     private Button getNextRandom;
     public ProgressBar loadingShowFetchBar;
@@ -62,6 +86,15 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private Map<String, String> imageConfigs;
     private Map<String, String> apiParams;
 
+    private HashMap<String, JSONObject> likedMovies;
+    private HashMap<String, JSONObject> likedTVShows;
+
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore mStore;
+    private String userID;
+    private DocumentReference userDataDoc;
+
+
 
 
     @Override
@@ -69,8 +102,36 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_random_show);
 
+        likedMovies = new HashMap<>();
+        likedTVShows = new HashMap<>();
+
         attemptedToGetMoviePages = false;
         attemptedToGetTVPages = false;
+
+        mAuth = FirebaseAuth.getInstance();
+        mStore = FirebaseFirestore.getInstance();
+        userID = mAuth.getCurrentUser().getUid();
+
+        userDataDoc = mStore.collection("users").document(userID);
+        ListenerRegistration registration = userDataDoc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                        if (documentSnapshot != null) {
+                            List<String> likedMovieIDs = (List<String>) documentSnapshot.get("LikedMovies");
+                            for (String movieID : likedMovieIDs) {
+                                likedMovies.put(movieID, new JSONObject());
+                            }
+
+                            List<String> likedTVShowIDs = (List<String>) documentSnapshot.get("LikedTVShows");
+                            for (String tvShowID : likedTVShowIDs) {
+                                likedTVShows.put(tvShowID, new JSONObject());
+                            }
+
+                        }
+                    }
+                });
+
+
 
         queue = Volley.newRequestQueue(this);
         apiHelper = new APIHelper();
@@ -80,6 +141,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         getNextRandom = findViewById(R.id.getNextRandom);
         getNextRandom.setOnClickListener(this);
         rand = new Random();
+        rand.setSeed(999);
 
         loadingShowFetchBar = findViewById(R.id.loadingShowFetchBar);
         loadingShowFetchBar.setVisibility(View.VISIBLE);
@@ -267,11 +329,26 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             e.printStackTrace();
             Toast.makeText(RandomShowActivity.this, "Could not load image", Toast.LENGTH_SHORT).show();
         }
-        ShowDisplayFragment fragment = ShowDisplayFragment.newInstance(replaceDateWithYear(movieObject).toString(), randomIsMovie);
+
+        currShow = movieObject;
+        currShowIsMovie = !movieObject.has("first_air_date");
+        try {
+            currShowID = currShow.getString("id");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Boolean isLiked = (currShowIsMovie && likedMovies.containsKey(currShowID)) || (!currShowIsMovie && likedTVShows.containsKey(currShowID));
+
+        ShowDisplayFragment fragment = ShowDisplayFragment.newInstance(replaceDateWithYear(movieObject).toString(), randomIsMovie, isLiked);
         fragment.setOnClickListener(new FragmentClickListener(){
             @Override
             public void onClick(View v) {
-                displayOverviewPopup(v, movieObject.optString("overview"));
+                if (v.getId() == R.id.overviewTxt && isOverviewEllipsized()) {
+                    displayOverviewPopup(v, movieObject.optString("overview"));
+                } else if (v.getId() == R.id.likeButton) {
+                    handleUserLike(v);
+                }
             }
         });
         // Insert the fragment by replacing any existing fragment
@@ -280,6 +357,37 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
                 .replace(R.id.random_movie_content_frame, fragment)
                 .commit();
         numViewed++;
+    }
+
+    void handleUserLike(View v) {
+        ImageView likeButton = findViewById(R.id.likeButton);
+        if (likeButton.getTag() != null && likeButton.getTag().equals(R.drawable.like_button)) {
+            likeButton.setImageResource(R.drawable.like_button_filled);
+            likeButton.setTag(R.drawable.like_button_filled);
+            if (currShowIsMovie) {
+                likedMovies.put(currShowID, currShow);
+            } else {
+                likedTVShows.put(currShowID, currShow);
+            }
+        } else {
+            likeButton.setImageResource(R.drawable.like_button);
+            likeButton.setTag(R.drawable.like_button);
+            if (currShowIsMovie) {
+                likedMovies.remove(currShowID);
+            } else {
+                likedTVShows.remove(currShowID);
+            }
+        }
+
+        if (currShow != null && currShow.has("id") && currShowIsMovie != null) {
+            if (currShowID != null) {
+                Toast.makeText(this, currShowID + " " + currShowIsMovie, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(apiHelper, "Show has no id", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Could not get movie deets", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public static Integer[] generatePageNumbers(Integer total) {
@@ -345,6 +453,108 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             dialog.getWindow().setLayout(width, height);
             dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
 
+        }
+    }
+
+    Boolean isOverviewEllipsized() {
+        TextView overviewTxt = findViewById(R.id.overviewTxt);
+        Layout l = overviewTxt.getLayout();
+        if (l != null) {
+            int lines = l.getLineCount();
+            return lines > 0 && l.getEllipsisCount(lines-1) > 0;
+        }
+        return false;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Write new liked movies to database
+        DocumentReference userDataDoc = mStore.collection("users").document(userID);
+
+        for (String key: likedMovies.keySet()) {
+            JSONObject showObject = likedMovies.get(key);
+            if (showObject != null) {
+                userDataDoc.update("LikedMovies", FieldValue.arrayUnion(key));
+                DocumentReference movieRef = mStore.collection("movies").document(key);
+
+                movieRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document != null && document.exists()) {
+                                movieRef.update("UsersWhoLike", FieldValue.arrayUnion(userID));
+                            } else {
+                                Map<String, Object> newMovie = new HashMap<>();
+                                String[] usersWhoLike = {userID};
+
+                                try {
+                                    newMovie.put("Name", showObject.getString("title"));
+                                } catch (JSONException jsonException) {
+                                    newMovie.put("Name", "Unknown");
+                                    jsonException.printStackTrace();
+                                }
+
+                                try {
+                                    newMovie.put("Overview", showObject.getString("overview"));
+                                } catch (JSONException jsonException) {
+                                    newMovie.put("Overview", "Unknown");
+                                    jsonException.printStackTrace();
+                                }
+
+                                newMovie.put("UsersWhoLike", Arrays.asList(usersWhoLike));
+                                mStore.collection("movies").document(key).set(newMovie);
+                            }
+                        } else {
+                            System.out.println("Something went wrong with finding show in db");
+                        }
+                    }
+                });
+            }
+        }
+
+        for (String key: likedTVShows.keySet()) {
+            JSONObject showObject = likedTVShows.get(key);
+            if (showObject != null) {
+                userDataDoc.update("LikedTVShows", FieldValue.arrayUnion(key));
+                DocumentReference tvRef = mStore.collection("tvShows").document(key);
+
+                tvRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists()) {
+                                tvRef.update("UsersWhoLike", FieldValue.arrayUnion(userID));
+                            } else {
+                                Map<String, Object> newTVShow = new HashMap<>();
+                                String[] usersWhoLike = {userID};
+
+                                try {
+                                    newTVShow.put("Name", showObject.getString("name"));
+                                } catch (JSONException jsonException) {
+                                    newTVShow.put("Name", "Unknown");
+                                    jsonException.printStackTrace();
+                                }
+
+                                try {
+                                    newTVShow.put("Overview", showObject.getString("overview"));
+                                } catch (JSONException jsonException) {
+                                    newTVShow.put("Overview", "Unknown");
+                                    jsonException.printStackTrace();
+                                }
+
+                                newTVShow.put("UsersWhoLike", Arrays.asList(usersWhoLike));
+
+                                mStore.collection("tvShows").document(key).set(newTVShow);                            }
+                        } else {
+                            System.out.println("Something went wrong with finding show in db");
+                        }
+                    }
+                });
+            }
         }
     }
 
