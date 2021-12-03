@@ -88,6 +88,8 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
 
     private HashMap<String, JSONObject> likedMovies;
     private HashMap<String, JSONObject> likedTVShows;
+    private HashSet<String> unlikedMovieIDs;
+    private HashSet<String> unlikedTVShowIDs;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore mStore;
@@ -104,6 +106,8 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
 
         likedMovies = new HashMap<>();
         likedTVShows = new HashMap<>();
+        unlikedMovieIDs = new HashSet<>();
+        unlikedTVShowIDs = new HashSet<>();
 
         attemptedToGetMoviePages = false;
         attemptedToGetTVPages = false;
@@ -362,20 +366,26 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     void handleUserLike(View v) {
         ImageView likeButton = findViewById(R.id.likeButton);
         if (likeButton.getTag() != null && likeButton.getTag().equals(R.drawable.like_button)) {
+            // User is liking the movie or tv show
             likeButton.setImageResource(R.drawable.like_button_filled);
             likeButton.setTag(R.drawable.like_button_filled);
             if (currShowIsMovie) {
                 likedMovies.put(currShowID, currShow);
+                unlikedMovieIDs.remove(currShowID);
             } else {
                 likedTVShows.put(currShowID, currShow);
+                unlikedTVShowIDs.remove(currShowID);
             }
         } else {
+            // user is unliking the movie or tv show
             likeButton.setImageResource(R.drawable.like_button);
             likeButton.setTag(R.drawable.like_button);
             if (currShowIsMovie) {
                 likedMovies.remove(currShowID);
+                unlikedMovieIDs.add(currShowID);
             } else {
                 likedTVShows.remove(currShowID);
+                unlikedTVShowIDs.add(currShowID);
             }
         }
 
@@ -473,12 +483,45 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         // Write new liked movies to database
         DocumentReference userDataDoc = mStore.collection("users").document(userID);
 
+        for (String key : unlikedMovieIDs) {
+            userDataDoc.update("LikedMovies", FieldValue.arrayRemove(key));
+
+            DocumentReference movieRef = mStore.collection("movies").document(key);
+            movieRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document != null && document.exists()) {
+                            movieRef.update("UsersWhoLike", FieldValue.arrayRemove(userID));
+                        }
+                    }
+                }
+            });
+        }
+
+        for (String key : unlikedTVShowIDs) {
+            userDataDoc.update("LikedTVShows", FieldValue.arrayRemove(key));
+
+            DocumentReference tvShowRef = mStore.collection("tvShows").document(key);
+            tvShowRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document != null && document.exists()) {
+                            tvShowRef.update("UsersWhoLike", FieldValue.arrayRemove(userID));
+                        }
+                    }
+                }
+            });
+        }
+
         for (String key: likedMovies.keySet()) {
             JSONObject showObject = likedMovies.get(key);
             if (showObject != null) {
                 userDataDoc.update("LikedMovies", FieldValue.arrayUnion(key));
                 DocumentReference movieRef = mStore.collection("movies").document(key);
-
                 movieRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
