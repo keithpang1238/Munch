@@ -11,6 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Munch">
+        <activity android:name=".ViewLikedActivity"></activity>
         <activity android:name=".BaseMenuActivity" />
         <activity
             android:name=".RandomShowActivity"
