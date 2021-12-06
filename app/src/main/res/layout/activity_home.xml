@@ -25,26 +25,46 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true">
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Find a show"
-            android:layout_marginRight="75dp"
-            android:layout_marginLeft="75dp"
-            android:id="@+id/searchShowBtn"/>
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="I'm feeling lucky"
-            android:layout_below="@id/searchShowBtn"
-            android:layout_marginTop="20dp"
-            android:layout_marginRight="75dp"
-            android:layout_marginLeft="75dp"
-            android:id="@+id/randomShowBtn">
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Find a show"
+                android:layout_marginRight="75dp"
+                android:layout_marginLeft="75dp"
+                android:id="@+id/searchShowBtn"/>
 
-        </Button>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="I'm feeling lucky"
+                android:layout_below="@id/searchShowBtn"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="75dp"
+                android:layout_marginLeft="75dp"
+                android:id="@+id/randomShowBtn"/>
 
-    </RelativeLayout>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="See Favourites"
+                android:layout_below="@id/randomShowBtn"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="75dp"
+                android:layout_marginLeft="75dp"
+                android:id="@+id/viewLikedButton"/>
+
+            <pl.droidsonroids.gif.GifImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/cute_gif"
+                android:layout_below="@id/viewLikedButton"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="90dp"
+                android:id="@+id/cuteGif"
+                android:visibility="gone"/>
+
+
+        </RelativeLayout>
 
 </RelativeLayout>

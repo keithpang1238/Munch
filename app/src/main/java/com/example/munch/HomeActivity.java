@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,10 +34,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 
+import pl.droidsonroids.gif.GifImageView;
+
 public class HomeActivity extends BaseMenuActivity implements View.OnClickListener{
 
     private Button searchMovieButton;
     private Button randomShowBtn;
+    private Button viewLikedBtn;
     private ProgressBar progressBar;
     private TextView welcomeTxt;
 
@@ -70,6 +74,8 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
     private String userID;
     private ListenerRegistration registration;
 
+    private String accountType;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,11 +91,13 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
 
         searchMovieButton = findViewById(R.id.searchShowBtn);
         randomShowBtn = findViewById(R.id.randomShowBtn);
+        viewLikedBtn = findViewById(R.id.viewLikedButton);
         progressBar = findViewById(R.id.loadingConfigsBar);
         welcomeTxt = findViewById(R.id.welcomeTxt);
 
         searchMovieButton.setVisibility(View.GONE);
         randomShowBtn.setVisibility(View.GONE);
+        viewLikedBtn.setVisibility(View.GONE);
         welcomeTxt.setVisibility(View.GONE);
 
         apiHelper = new APIHelper();
@@ -127,9 +135,10 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
             intent.putExtra("movieGenres", movieGenres);
             intent.putExtra("tvGenres", tvGenres);
             intent.putExtra("providers", providers);
-        } else {
-            // Random show button
+        } else if (view.getId() == R.id.randomShowBtn) {
             intent = new Intent(HomeActivity.this, RandomShowActivity.class);
+        } else {
+            intent = new Intent(HomeActivity.this, ViewLikedActivity.class);
         }
         intent.putExtra("imageConfigs", imageConfigs);
         startActivity(intent);
@@ -164,7 +173,7 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
                     if (documentSnapshot != null) {
                         // Generate and display welcome message
                         String firstName = documentSnapshot.getString("FirstName");
-                        String accountType = documentSnapshot.getString("AccountType");
+                        accountType = documentSnapshot.getString("AccountType");
                         welcomeTxt.setVisibility(View.VISIBLE);
 
                         String unknownMessage = "Don't know who you are, soz bro";
@@ -176,7 +185,7 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
                                 } else {
                                     welcomeMessage = unknownMessage;
                                 }
-                            } else if (accountType.equals("special")) {
+                            } else if (accountType.equals("vvip")) {
                                 welcomeMessage = "Heya";
                             } else {
                                 welcomeMessage = unknownMessage;
@@ -198,6 +207,14 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
                     randomShowBtn.setVisibility(View.VISIBLE);
                     randomShowBtn.setOnClickListener(HomeActivity.this);
 
+                    viewLikedBtn.setVisibility(View.VISIBLE);
+                    viewLikedBtn.setOnClickListener(HomeActivity.this);
+
+                    // show cute gif
+                    if (accountType != null && accountType.equals("vvip")) {
+                        GifImageView cuteGif = findViewById(R.id.cuteGif);
+                        cuteGif.setVisibility(View.VISIBLE);
+                    }
                 }
             });
         }
