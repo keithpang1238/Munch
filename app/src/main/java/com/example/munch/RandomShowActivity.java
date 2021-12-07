@@ -390,9 +390,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         }
 
         if (currShow != null && currShow.has("id") && currShowIsMovie != null) {
-            if (currShowID != null) {
-                Toast.makeText(this, currShowID + " " + currShowIsMovie, Toast.LENGTH_SHORT).show();
-            } else {
+            if (currShowID == null) {
                 Toast.makeText(apiHelper, "Show has no id", Toast.LENGTH_SHORT).show();
             }
         } else {
