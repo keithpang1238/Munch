@@ -1,66 +1,155 @@
 package com.example.munch;
 
+import android.app.Dialog;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.TextView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link FavouritesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Objects;
+
 public class FavouritesFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private String userID;
+    private Boolean isMovie;
+    private String collectionName;
+    private FirebaseFirestore mStore;
+    private FirestoreRecyclerAdapter adapter;
+    private RecyclerView mFirestoreList;
 
-    public FavouritesFragment() {
-        // Required empty public constructor
-    }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FavouritesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static FavouritesFragment newInstance(String param1, String param2) {
-        FavouritesFragment fragment = new FavouritesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    public FavouritesFragment(String userID, Boolean isMovie) {
+        this.userID = userID;
+        this.isMovie = isMovie;
+        mStore = FirebaseFirestore.getInstance();
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+        if (isMovie) {
+            collectionName = "movies";
+        } else {
+            collectionName = "tvShows";
         }
+
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_favourites, container, false);
+        mFirestoreList = root.findViewById(R.id.showRecyclerView);
+
+        Query query = mStore.collection(collectionName)
+                .whereArrayContains("UsersWhoLike", userID);
+        FirestoreRecyclerOptions<ShowModel> options = new FirestoreRecyclerOptions.Builder<ShowModel>()
+                .setQuery(query, ShowModel.class).build();
+        adapter = new FirestoreRecyclerAdapter<ShowModel, ShowsViewHolder>(options) {
+
+            @NonNull
+            @NotNull
+            @Override
+            public ShowsViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.show_list_item_single, parent, false);
+                return new ShowsViewHolder(view);
+            }
+
+            @Override
+            protected void onBindViewHolder(@NonNull @NotNull ShowsViewHolder holder, int position, @NonNull @NotNull ShowModel model) {
+                holder.showName.setText(model.getName());
+                String showID = getSnapshots().getSnapshot(position).getId();
+                holder.deleteLikeButton.setTag(showID);
+                holder.overview = model.getOverview();
+            }
+        };
+
+        mFirestoreList.setHasFixedSize(true);
+        mFirestoreList.setLayoutManager(new LinearLayoutManager(this.getContext()));
+        mFirestoreList.setAdapter(adapter);
+
+
 
         return root;
+    }
+
+    private class ShowsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+
+        private TextView showName;
+        private Button deleteLikeButton;
+        private String overview;
+
+        public ShowsViewHolder(@NonNull @NotNull View itemView) {
+            super(itemView);
+            showName = itemView.findViewById(R.id.nameListText);
+            deleteLikeButton = itemView.findViewById(R.id.deleteLikeButton);
+            deleteLikeButton.setOnClickListener(this);
+            showName.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (view.getId() == R.id.deleteLikeButton) {
+                String showID = view.getTag().toString();
+                DocumentReference userDataDoc = mStore.collection("users").document(userID);
+                if (isMovie) {
+                    userDataDoc.update("LikedMovies", FieldValue.arrayRemove(showID));
+                } else {
+                    userDataDoc.update("LikedTVShows", FieldValue.arrayRemove(showID));
+                }
+
+                DocumentReference showDataDoc = mStore.collection(collectionName).document(showID);
+                showDataDoc.update("UsersWhoLike", FieldValue.arrayRemove(userID));
+            } else if (view.getId() == R.id.nameListText) {
+                Dialog dialog = new AlertDialog.Builder(getActivity())
+                        .setMessage(overview).setTitle(showName.getText().toString()).show();
+
+                WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+                lp.copyFrom(dialog.getWindow().getAttributes());
+
+                int width = (int)(getResources().getDisplayMetrics().widthPixels*0.90);
+                int height = (int)(getResources().getDisplayMetrics().heightPixels*0.50);
+
+
+                lp.dimAmount=0.8f;
+                dialog.getWindow().setAttributes(lp);
+                dialog.getWindow().setLayout(width, height);
+                dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+            }
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        adapter.stopListening();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (adapter != null) {
+            adapter.startListening();
+        }
     }
 }
