@@ -42,7 +42,6 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
     private Button randomShowBtn;
     private Button viewLikedBtn;
     private ProgressBar progressBar;
-    private TextView welcomeTxt;
 
     private RequestQueue queue;
     private APIHelper apiHelper;
@@ -93,12 +92,10 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
         randomShowBtn = findViewById(R.id.randomShowBtn);
         viewLikedBtn = findViewById(R.id.viewLikedButton);
         progressBar = findViewById(R.id.loadingConfigsBar);
-        welcomeTxt = findViewById(R.id.welcomeTxt);
 
         searchMovieButton.setVisibility(View.GONE);
         randomShowBtn.setVisibility(View.GONE);
         viewLikedBtn.setVisibility(View.GONE);
-        welcomeTxt.setVisibility(View.GONE);
 
         apiHelper = new APIHelper();
         dbHelper = new DBHelper(this);
@@ -172,29 +169,8 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
                 public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                     if (documentSnapshot != null) {
                         // Generate and display welcome message
-                        String firstName = documentSnapshot.getString("FirstName");
                         accountType = documentSnapshot.getString("AccountType");
-                        welcomeTxt.setVisibility(View.VISIBLE);
-
                         String unknownMessage = "Don't know who you are, soz bro";
-                        String welcomeMessage;
-                        if (accountType != null) {
-                            if (accountType.equals("standard")) {
-                                if (firstName != null) {
-                                    welcomeMessage = "Welcome " + firstName;
-                                } else {
-                                    welcomeMessage = unknownMessage;
-                                }
-                            } else if (accountType.equals("vvip")) {
-                                welcomeMessage = getString(R.string.potato_message);
-                            } else {
-                                welcomeMessage = unknownMessage;
-                            }
-                        } else {
-                            welcomeMessage = unknownMessage;
-                        }
-
-                        welcomeTxt.setText(welcomeMessage);
                     }
 
                     // Hide loader
