@@ -42,7 +42,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         passwordEdit = findViewById(R.id.passwordEdit);
         loginBtn.setOnClickListener(this);
 
-        if (isChristmasPeriod()) {
+        if (Holiday.isChristmasPeriod()) {
             ImageView holly = findViewById(R.id.hollyImage);
             holly.setVisibility(View.VISIBLE);
             GifImageView santaGif = findViewById(R.id.santaGif);
@@ -89,12 +89,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         );
     }
 
-    private boolean isChristmasPeriod() {
-        Calendar calendar = Calendar.getInstance();
-        int month  = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        return month == 11 || (month == 10 && day > 22) || (month == 0 && day < 5);
-    }
 
 
 }
