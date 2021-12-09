@@ -23,8 +23,7 @@
             android:name=".SearchMovieActivity"
             android:parentActivityName=".HomeActivity" />
         <activity
-            android:name=".HomeActivity"
-            android:noHistory="true"/>
+            android:name=".HomeActivity" />
         <activity
             android:name=".LoginActivity"
             android:exported="true"

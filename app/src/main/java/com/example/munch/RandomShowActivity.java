@@ -96,6 +96,8 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private String userID;
     private DocumentReference userDataDoc;
 
+    private FirestoreHelper firestoreHelper;
+
 
 
 
@@ -113,10 +115,10 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         attemptedToGetTVPages = false;
 
         mAuth = FirebaseAuth.getInstance();
-        mStore = FirebaseFirestore.getInstance();
         userID = mAuth.getCurrentUser().getUid();
+        firestoreHelper = new FirestoreHelper();
 
-        userDataDoc = mStore.collection("users").document(userID);
+        userDataDoc = firestoreHelper.getUserDoc(userID);
         ListenerRegistration registration = userDataDoc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
                     @Override
                     public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
@@ -479,8 +481,11 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         super.onPause();
 
         // Write new liked movies to database
-        DocumentReference userDataDoc = mStore.collection("users").document(userID);
+        firestoreHelper.handleUserLike(userID, unlikedMovieIDs, likedMovies, true);
+        // Write new liked tv shows to database
+        firestoreHelper.handleUserLike(userID, unlikedTVShowIDs, likedTVShows, false);
 
+        /*
         for (String key : unlikedMovieIDs) {
             userDataDoc.update("LikedMovies", FieldValue.arrayRemove(key));
 
@@ -596,7 +601,11 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
                     }
                 });
             }
+
+
         }
+
+         */
     }
 
     @Override
