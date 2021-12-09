@@ -92,7 +92,6 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private HashSet<String> unlikedTVShowIDs;
 
     private FirebaseAuth mAuth;
-    private FirebaseFirestore mStore;
     private String userID;
     private DocumentReference userDataDoc;
 
@@ -479,133 +478,11 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     @Override
     protected void onPause() {
         super.onPause();
-
         // Write new liked movies to database
         firestoreHelper.handleUserLike(userID, unlikedMovieIDs, likedMovies, true);
         // Write new liked tv shows to database
         firestoreHelper.handleUserLike(userID, unlikedTVShowIDs, likedTVShows, false);
 
-        /*
-        for (String key : unlikedMovieIDs) {
-            userDataDoc.update("LikedMovies", FieldValue.arrayRemove(key));
-
-            DocumentReference movieRef = mStore.collection("movies").document(key);
-            movieRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document != null && document.exists()) {
-                            movieRef.update("UsersWhoLike", FieldValue.arrayRemove(userID));
-                        }
-                    }
-                }
-            });
-        }
-
-        for (String key : unlikedTVShowIDs) {
-            userDataDoc.update("LikedTVShows", FieldValue.arrayRemove(key));
-
-            DocumentReference tvShowRef = mStore.collection("tvShows").document(key);
-            tvShowRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document != null && document.exists()) {
-                            tvShowRef.update("UsersWhoLike", FieldValue.arrayRemove(userID));
-                        }
-                    }
-                }
-            });
-        }
-
-        for (String key: likedMovies.keySet()) {
-            JSONObject showObject = likedMovies.get(key);
-            if (showObject != null) {
-                userDataDoc.update("LikedMovies", FieldValue.arrayUnion(key));
-                DocumentReference movieRef = mStore.collection("movies").document(key);
-                movieRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document != null && document.exists()) {
-                                movieRef.update("UsersWhoLike", FieldValue.arrayUnion(userID));
-                            } else {
-                                Map<String, Object> newMovie = new HashMap<>();
-                                String[] usersWhoLike = {userID};
-
-                                try {
-                                    newMovie.put("Name", showObject.getString("title"));
-                                } catch (JSONException jsonException) {
-                                    newMovie.put("Name", "Unknown");
-                                    jsonException.printStackTrace();
-                                }
-
-                                try {
-                                    newMovie.put("Overview", showObject.getString("overview"));
-                                } catch (JSONException jsonException) {
-                                    newMovie.put("Overview", "Unknown");
-                                    jsonException.printStackTrace();
-                                }
-
-                                newMovie.put("UsersWhoLike", Arrays.asList(usersWhoLike));
-                                mStore.collection("movies").document(key).set(newMovie);
-                            }
-                        } else {
-                            System.out.println("Something went wrong with finding show in db");
-                        }
-                    }
-                });
-            }
-        }
-
-        for (String key: likedTVShows.keySet()) {
-            JSONObject showObject = likedTVShows.get(key);
-            if (showObject != null) {
-                userDataDoc.update("LikedTVShows", FieldValue.arrayUnion(key));
-                DocumentReference tvRef = mStore.collection("tvShows").document(key);
-
-                tvRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document.exists()) {
-                                tvRef.update("UsersWhoLike", FieldValue.arrayUnion(userID));
-                            } else {
-                                Map<String, Object> newTVShow = new HashMap<>();
-                                String[] usersWhoLike = {userID};
-
-                                try {
-                                    newTVShow.put("Name", showObject.getString("name"));
-                                } catch (JSONException jsonException) {
-                                    newTVShow.put("Name", "Unknown");
-                                    jsonException.printStackTrace();
-                                }
-
-                                try {
-                                    newTVShow.put("Overview", showObject.getString("overview"));
-                                } catch (JSONException jsonException) {
-                                    newTVShow.put("Overview", "Unknown");
-                                    jsonException.printStackTrace();
-                                }
-
-                                newTVShow.put("UsersWhoLike", Arrays.asList(usersWhoLike));
-
-                                mStore.collection("tvShows").document(key).set(newTVShow);                            }
-                        } else {
-                            System.out.println("Something went wrong with finding show in db");
-                        }
-                    }
-                });
-            }
-
-
-        }
-
-         */
     }
 
     @Override

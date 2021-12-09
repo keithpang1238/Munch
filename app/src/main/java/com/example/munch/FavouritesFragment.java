@@ -24,7 +24,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,8 +36,7 @@ public class FavouritesFragment extends Fragment {
 
     private String userID;
     private Boolean isMovie;
-    private String collectionName;
-    private FirebaseFirestore mStore;
+    private FirestoreHelper firestoreHelper;
     private FirestoreRecyclerAdapter adapter;
     private RecyclerView mFirestoreList;
 
@@ -43,14 +44,7 @@ public class FavouritesFragment extends Fragment {
     public FavouritesFragment(String userID, Boolean isMovie) {
         this.userID = userID;
         this.isMovie = isMovie;
-        mStore = FirebaseFirestore.getInstance();
-
-        if (isMovie) {
-            collectionName = "movies";
-        } else {
-            collectionName = "tvShows";
-        }
-
+        firestoreHelper = new FirestoreHelper();
     }
 
 
@@ -61,8 +55,7 @@ public class FavouritesFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_favourites, container, false);
         mFirestoreList = root.findViewById(R.id.showRecyclerView);
 
-        Query query = mStore.collection(collectionName)
-                .whereArrayContains("UsersWhoLike", userID);
+        Query query = firestoreHelper.getArrayContainsQuery(isMovie, userID, "UsersWhoLike");
         FirestoreRecyclerOptions<ShowModel> options = new FirestoreRecyclerOptions.Builder<ShowModel>()
                 .setQuery(query, ShowModel.class).build();
         adapter = new FirestoreRecyclerAdapter<ShowModel, ShowsViewHolder>(options) {
@@ -111,15 +104,9 @@ public class FavouritesFragment extends Fragment {
         public void onClick(View view) {
             if (view.getId() == R.id.deleteLikeButton) {
                 String showID = view.getTag().toString();
-                DocumentReference userDataDoc = mStore.collection("users").document(userID);
-                if (isMovie) {
-                    userDataDoc.update("LikedMovies", FieldValue.arrayRemove(showID));
-                } else {
-                    userDataDoc.update("LikedTVShows", FieldValue.arrayRemove(showID));
-                }
-
-                DocumentReference showDataDoc = mStore.collection(collectionName).document(showID);
-                showDataDoc.update("UsersWhoLike", FieldValue.arrayRemove(userID));
+                HashSet<String> unlikedIDs = new HashSet<>();
+                unlikedIDs.add(showID);
+                firestoreHelper.handleUserLike(userID, unlikedIDs, null, isMovie);
             } else if (view.getId() == R.id.nameListText) {
                 Dialog dialog = new AlertDialog.Builder(getActivity())
                         .setMessage(overview).setTitle(showName.getText().toString()).show();

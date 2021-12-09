@@ -8,6 +8,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +47,10 @@ public class FirestoreHelper {
         return "name";
     }
 
+    public Query getArrayContainsQuery(Boolean isMovie, String userID, String arrayField) {
+        return mStore.collection(getShowCollection(isMovie)).whereArrayContains(arrayField, userID);
+    }
+
     public DocumentReference getUserDoc(String userID) {
         return mStore.collection("users").document(userID);
     }
@@ -59,6 +64,7 @@ public class FirestoreHelper {
 
         String showCollection = getShowCollection(isMovie);
         String likedShowField = getLikedShowField(isMovie);
+        String showTitleField = getShowTitleField(isMovie);
 
         DocumentReference userDataDoc = getUserDoc(userID);
 
@@ -99,7 +105,7 @@ public class FirestoreHelper {
                                     String[] usersWhoLike = {userID};
 
                                     try {
-                                        newShow.put("Name", showObject.getString("title"));
+                                        newShow.put("Name", showObject.getString(showTitleField));
                                     } catch (JSONException jsonException) {
                                         newShow.put("Name", "Unknown");
                                         jsonException.printStackTrace();

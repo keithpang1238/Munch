@@ -28,7 +28,6 @@ import java.util.List;
 public class ViewLikedActivity extends BaseMenuActivity {
 
     private FirebaseAuth mAuth;
-    private FirebaseFirestore mStore;
     private String userID;
     private ListenerRegistration registration;
 
@@ -66,22 +65,7 @@ public class ViewLikedActivity extends BaseMenuActivity {
         ).attach();
 
         mAuth = FirebaseAuth.getInstance();
-        mStore = FirebaseFirestore.getInstance();
         userID = mAuth.getCurrentUser().getUid();
-
-        /*
-        // Get liked ids
-        DocumentReference userDataDoc = mStore.collection("users").document(userID);
-        registration = userDataDoc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if (documentSnapshot != null) {
-                    likedMovieIDs = (List<String>) documentSnapshot.get("LikedMovies");
-                    likedTVShowIDs = (List<String>) documentSnapshot.get("LikedTVShows");
-                }
-            }
-        });
-         */
     }
 
 

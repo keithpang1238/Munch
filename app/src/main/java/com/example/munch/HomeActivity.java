@@ -69,7 +69,7 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
     private Boolean attemptedProviderRetrieval;
 
     private FirebaseAuth mAuth;
-    private FirebaseFirestore mStore;
+    private FirestoreHelper firestoreHelper;
     private String userID;
     private ListenerRegistration registration;
 
@@ -85,7 +85,7 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
         queue = Volley.newRequestQueue(this);
 
         mAuth = FirebaseAuth.getInstance();
-        mStore = FirebaseFirestore.getInstance();
+        firestoreHelper = new FirestoreHelper();
         userID = mAuth.getCurrentUser().getUid();
 
         searchMovieButton = findViewById(R.id.searchShowBtn);
@@ -163,7 +163,7 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
                 && attemptedImageConfigRetrieval
                 && attemptedProviderRetrieval) {
 
-            DocumentReference userDataDoc = mStore.collection("users").document(userID);
+            DocumentReference userDataDoc = firestoreHelper.getUserDoc(userID);
             registration = userDataDoc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
                 @Override
                 public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
