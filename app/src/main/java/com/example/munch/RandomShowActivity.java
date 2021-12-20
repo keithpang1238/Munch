@@ -58,7 +58,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private Integer currTVPage;
     private Boolean attemptedToGetMoviePages;
     private Boolean attemptedToGetTVPages;
-    private final Integer MAX_PAGES = 15;
+    private final Integer MAX_PAGES = 20;
     private Boolean randomIsMovie;
     private Boolean userGivenIsMovie;
     private JSONObject currShow;
@@ -75,6 +75,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private final String URL_PREFIX_CONFIG = "https://api.themoviedb.org/3/configuration?";
     private final String API = "&api_key=" + BuildConfig.movieAPIKey;
     private final String REGION = "&watch_region=AU";
+    private final String WATCH_TYPES = "&with_watch_monetization_types=free|ads";
 
     private final String DEFAULT_URL_IMAGE_PREFIX = "https://image.tmdb.org/t/p/original/";
     private String url_image_prefix;
@@ -246,7 +247,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             }
         }
 
-        StringBuilder urlBuilder = new StringBuilder(URL_PREFIX + API + pageString + REGION);
+        StringBuilder urlBuilder = new StringBuilder(URL_PREFIX + API + pageString + REGION + WATCH_TYPES);
         if (apiParams != null) {
             for (String key : apiParams.keySet()) {
                 urlBuilder.append(apiParams.get(key));

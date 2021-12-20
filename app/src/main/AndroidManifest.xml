@@ -13,7 +13,7 @@
         android:theme="@style/Theme.Munch">
         <activity
             android:name=".ViewLikedActivity"
-            android:parentActivityName=".HomeActivity"/>
+            android:parentActivityName=".HomeActivity" />
         <activity android:name=".BaseMenuActivity" />
         <activity
             android:name=".RandomShowActivity"
@@ -22,8 +22,7 @@
         <activity
             android:name=".SearchMovieActivity"
             android:parentActivityName=".HomeActivity" />
-        <activity
-            android:name=".HomeActivity" />
+        <activity android:name=".HomeActivity" />
         <activity
             android:name=".LoginActivity"
             android:exported="true"
