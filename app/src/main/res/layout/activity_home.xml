@@ -46,16 +46,6 @@
                 android:layout_marginLeft="75dp"
                 android:id="@+id/viewLikedButton"/>
 
-            <pl.droidsonroids.gif.GifImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/cute_gif"
-                android:layout_below="@id/viewLikedButton"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="90dp"
-                android:id="@+id/cuteGif"
-                android:visibility="gone"/>
-
 
         </RelativeLayout>
 

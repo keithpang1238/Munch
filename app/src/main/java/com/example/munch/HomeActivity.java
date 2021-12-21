@@ -185,15 +185,6 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
 
                     viewLikedBtn.setVisibility(View.VISIBLE);
                     viewLikedBtn.setOnClickListener(HomeActivity.this);
-
-                    // show cute gif
-                    if (accountType != null && accountType.equals("vvip")) {
-                        GifImageView cuteGif = findViewById(R.id.cuteGif);
-                        if (Holiday.isChristmasPeriod()) {
-                            cuteGif.setImageResource(R.drawable.cute_gif_christmas);
-                        }
-                        cuteGif.setVisibility(View.VISIBLE);
-                    }
                 }
             });
         }

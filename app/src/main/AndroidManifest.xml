@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Munch">
         <activity
+            android:name=".ProfileActivity"
+            android:parentActivityName=".HomeActivity"/>
+        <activity
             android:name=".ViewLikedActivity"
             android:parentActivityName=".HomeActivity" />
         <activity android:name=".BaseMenuActivity" />
@@ -29,7 +32,6 @@
             android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
