@@ -70,7 +70,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
 
         if (TextUtils.isEmpty(password)) {
-            usernameEdit.setError("Password is required");
+            passwordEdit.setError("Password is required");
             return;
         }
 
@@ -83,6 +83,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                     } else {
                         Toast.makeText(LoginActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        passwordEdit.setText("");
                     }
                 }
             }
