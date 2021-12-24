@@ -75,7 +75,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private final String URL_PREFIX_CONFIG = "https://api.themoviedb.org/3/configuration?";
     private final String API = "&api_key=" + BuildConfig.movieAPIKey;
     private final String REGION = "&watch_region=AU";
-    private final String WATCH_TYPES = "&with_watch_monetization_types=free|ads";
+    private final String WATCH_TYPES = "&with_watch_monetization_types=free|ads|flatrate";
 
     private final String DEFAULT_URL_IMAGE_PREFIX = "https://image.tmdb.org/t/p/original/";
     private String url_image_prefix;
