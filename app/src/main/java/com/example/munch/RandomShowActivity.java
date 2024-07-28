@@ -187,7 +187,6 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             JSONArray poster_sizes = new JSONArray(imageConfigs.get("poster_sizes"));
             if (poster_sizes.length() > 0) {
                 url_image_prefix = imageConfigs.get("secure_base_url") + poster_sizes.getString(poster_sizes.length() - 1);
-                System.out.println(url_image_prefix);
             }
             else {
                 Toast.makeText(RandomShowActivity.this, "Using default image url", Toast.LENGTH_SHORT).show();
@@ -254,8 +253,6 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             }
         }
         String url = urlBuilder.toString();
-        System.out.println(url);
-
         queue.cancelAll(TAG_SEARCH_SHOW);
 
         StringRequest stringRequest = apiHelper.movieTVAPICall(url, this,

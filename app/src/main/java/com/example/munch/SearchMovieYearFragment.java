@@ -67,8 +67,6 @@ public class SearchMovieYearFragment extends Fragment implements View.OnClickLis
                 EditText minTimeTxt = activity.findViewById(R.id.minTimeTxt);
                 EditText maxTimeTxt = activity.findViewById(R.id.maxTimeTxt);
 
-                System.out.println(startYearTxt.getMeasuredWidth());
-
                 if (startYearTxt.getMeasuredWidth() > endYearTxt.getMeasuredWidth()) {
                     endYearTxt.setWidth(startYearTxt.getMeasuredWidth());
                 } else {

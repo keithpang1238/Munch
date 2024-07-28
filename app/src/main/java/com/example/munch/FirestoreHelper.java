@@ -90,24 +90,11 @@ public class FirestoreHelper {
                         return null;
                     }
                 }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                System.out.println(e.getMessage());
-                            }
-                        });
-                /*
-                showRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document != null && document.exists()) {
-                                showRef.update("UsersWhoLike", FieldValue.arrayRemove(userID));
-                            }
-                        }
+                    public void onFailure(@NonNull Exception e) {
+                        System.out.println(e.getMessage());
                     }
                 });
-                */
             }
         }
 
@@ -155,46 +142,8 @@ public class FirestoreHelper {
                             System.out.println(e.getMessage());
                         }
                     });
-
-                    /*
-                    showRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                DocumentSnapshot document = task.getResult();
-                                if (document != null && document.exists()) {
-                                    showRef.update("UsersWhoLike", FieldValue.arrayUnion(userID));
-                                } else {
-                                    Map<String, Object> newShow = new HashMap<>();
-                                    String[] usersWhoLike = {userID};
-
-                                    try {
-                                        newShow.put("Name", showObject.getString(showTitleField));
-                                    } catch (JSONException jsonException) {
-                                        newShow.put("Name", "Unknown");
-                                        jsonException.printStackTrace();
-                                    }
-
-                                    try {
-                                        newShow.put("Overview", showObject.getString("overview"));
-                                    } catch (JSONException jsonException) {
-                                        newShow.put("Overview", "Unknown");
-                                        jsonException.printStackTrace();
-                                    }
-
-                                    newShow.put("UsersWhoLike", Arrays.asList(usersWhoLike));
-                                    mStore.collection(showCollection).document(key).set(newShow);
-                                }
-                            } else {
-                                System.out.println("Something went wrong with finding show in db");
-                            }
-                        }
-                    });
-
-                     */
                 }
             }
         }
-
     }
 }

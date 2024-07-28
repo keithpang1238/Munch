@@ -91,7 +91,6 @@ class DBHelper extends SQLiteOpenHelper {
         if (cursor.moveToNext()) {
             try {
                 long lastUpdateString = cursor.getLong(1);
-                System.out.println(System.currentTimeMillis() - lastUpdateString);
                 cursor.close();
                 db.close();
                 return System.currentTimeMillis() - lastUpdateString > 1000 * 60 * 60 * 24 * 7;
