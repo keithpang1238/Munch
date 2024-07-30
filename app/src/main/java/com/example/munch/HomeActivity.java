@@ -154,20 +154,17 @@ public class HomeActivity extends BaseMenuActivity implements View.OnClickListen
             return;
         }
         DocumentReference userDataDoc = firestoreHelper.getUserDoc(userID);
-        registration = userDataDoc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                // Hide loader
-                progressBar.setVisibility(View.INVISIBLE);
+        registration = userDataDoc.addSnapshotListener(this, (documentSnapshot, e) -> {
+            // Hide loader
+            progressBar.setVisibility(View.INVISIBLE);
 
-                // Prepare buttons
-                searchMovieButton.setVisibility(View.VISIBLE);
-                searchMovieButton.setOnClickListener(HomeActivity.this);
-                randomShowBtn.setVisibility(View.VISIBLE);
-                randomShowBtn.setOnClickListener(HomeActivity.this);
-                viewLikedBtn.setVisibility(View.VISIBLE);
-                viewLikedBtn.setOnClickListener(HomeActivity.this);
-            }
+            // Prepare buttons
+            searchMovieButton.setVisibility(View.VISIBLE);
+            searchMovieButton.setOnClickListener(HomeActivity.this);
+            randomShowBtn.setVisibility(View.VISIBLE);
+            randomShowBtn.setOnClickListener(HomeActivity.this);
+            viewLikedBtn.setVisibility(View.VISIBLE);
+            viewLikedBtn.setOnClickListener(HomeActivity.this);
         });
     }
 

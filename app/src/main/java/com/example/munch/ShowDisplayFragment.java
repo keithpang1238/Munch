@@ -119,9 +119,8 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
             overviewTxt.setOnClickListener(this);
 
             if (showJSONObject.has("url_image_prefix") && showJSONObject.has("poster_path")) {
-                String full_poster_url = null;
                 try {
-                    full_poster_url = showJSONObject.getString("url_image_prefix") +
+                    String full_poster_url = showJSONObject.getString("url_image_prefix") +
                             showJSONObject.getString("poster_path");
                     Picasso.get().load(full_poster_url).into(posterImage);
                 } catch (JSONException e) {

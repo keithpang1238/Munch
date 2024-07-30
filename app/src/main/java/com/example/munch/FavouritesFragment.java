@@ -29,9 +29,9 @@ public class FavouritesFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
 
-    private String userID;
-    private Boolean isMovie;
-    private FirestoreHelper firestoreHelper;
+    private final String userID;
+    private final Boolean isMovie;
+    private final FirestoreHelper firestoreHelper;
     private FirestoreRecyclerAdapter adapter;
     private RecyclerView mFirestoreList;
 

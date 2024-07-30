@@ -56,12 +56,7 @@ public class SearchMovieActivity extends BaseMenuActivity {
 
         isMovie = true;
         SearchMovieTypeFragment fragment = new SearchMovieTypeFragment();
-        fragment.setOnClickListener(new FragmentClickListener(){
-            @Override
-            public void onClick(View v) {
-                handleMovieType(v);
-            }
-        });
+        fragment.setOnClickListener(this::handleMovieType);
 
         // Insert the fragment by replacing any existing fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -84,12 +79,7 @@ public class SearchMovieActivity extends BaseMenuActivity {
         } else {
             searchGenreFragment = SearchMovieGenreFragment.newInstance(tvGenres);
         }
-        searchGenreFragment.setOnClickListener(new FragmentClickListener(){
-            @Override
-            public void onClick(View v) {
-                retrieveGenres();
-            }
-        });
+        searchGenreFragment.setOnClickListener(v1 -> retrieveGenres());
 
         // Insert the fragment by replacing any existing fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -118,12 +108,7 @@ public class SearchMovieActivity extends BaseMenuActivity {
 
         SearchMovieProviderFragment movieProviderFragment =
                 SearchMovieProviderFragment.newInstance(providers);
-        movieProviderFragment.setOnClickListener(new FragmentClickListener(){
-            @Override
-            public void onClick(View v) {
-                retrieveProviders();
-            }
-        });
+        movieProviderFragment.setOnClickListener(v -> retrieveProviders());
 
         // Insert the fragment by replacing any existing fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -148,12 +133,9 @@ public class SearchMovieActivity extends BaseMenuActivity {
 
         SearchMovieYearFragment movieYearFragment =
                 SearchMovieYearFragment.newInstance(isMovie);
-        movieYearFragment.setOnClickListener(new FragmentClickListener(){
-            @Override
-            public void onClick(View v) {
-                if (v.getId() == R.id.submitBtn) {
-                    retrieveYearRatingRuntimeData();
-                }
+        movieYearFragment.setOnClickListener(v -> {
+            if (v.getId() == R.id.submitBtn) {
+                retrieveYearRatingRuntimeData();
             }
         });
 
