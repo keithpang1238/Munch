@@ -73,7 +73,6 @@ public class FirestoreHelper {
                 mStore.runTransaction((Transaction.Function<Void>) transaction -> {
                     transaction.update(userDataDoc, likedShowField, FieldValue.arrayRemove(key));
                     transaction.update(showRef, "UsersWhoLike", FieldValue.arrayRemove(userID));
-
                     // Success
                     return null;
                 }).addOnFailureListener(e -> System.out.println(e.getMessage()));
@@ -102,7 +101,6 @@ public class FirestoreHelper {
                                 newShow.put("Name", "Unknown");
                                 jsonException.printStackTrace();
                             }
-
                             try {
                                 newShow.put("Overview", showObject.getString("overview"));
                             } catch (JSONException jsonException) {
