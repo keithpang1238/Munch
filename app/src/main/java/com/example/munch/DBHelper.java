@@ -15,7 +15,7 @@ import java.util.Map;
 
 class DBHelper extends SQLiteOpenHelper {
 
-    private Context context;
+    private final Context context;
 
     private static final String DATABASE_NAME = "Munch.db";
     private static final int DATABASE_VERSION = 10;
@@ -91,7 +91,6 @@ class DBHelper extends SQLiteOpenHelper {
         if (cursor.moveToNext()) {
             try {
                 long lastUpdateString = cursor.getLong(1);
-                System.out.println(System.currentTimeMillis() - lastUpdateString);
                 cursor.close();
                 db.close();
                 return System.currentTimeMillis() - lastUpdateString > 1000 * 60 * 60 * 24 * 7;
@@ -164,8 +163,7 @@ class DBHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    Boolean addImageConfigs(Map<String, String> imageConfigs) {
-
+    void addImageConfigs(Map<String, String> imageConfigs) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         long count = DatabaseUtils.queryNumEntries(db, IMAGE_CONFIG_TABLE_NAME);
@@ -180,14 +178,11 @@ class DBHelper extends SQLiteOpenHelper {
         }
         db.setTransactionSuccessful();
         db.endTransaction();
-
         recordUpdate();
-
         db.close();
-        return true;
     }
 
-    Boolean addGenres(Map<String, String> genres, Boolean isMovie) {
+    void addGenres(Map<String, String> genres, Boolean isMovie) {
         String tableName;
         if (isMovie) {
             tableName = MOVIE_GENRE_TABLE_NAME;
@@ -209,13 +204,10 @@ class DBHelper extends SQLiteOpenHelper {
         }
         db.setTransactionSuccessful();
         db.endTransaction();
-
         db.close();
-        return true;
     }
 
-    Boolean addProviders(Map<String, String> providers) {
-
+    void addProviders(Map<String, String> providers) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         long count = DatabaseUtils.queryNumEntries(db, PROVIDER_TABLE_NAME);
@@ -230,9 +222,7 @@ class DBHelper extends SQLiteOpenHelper {
         }
         db.setTransactionSuccessful();
         db.endTransaction();
-
         db.close();
-        return true;
     }
 }
 

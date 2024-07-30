@@ -15,27 +15,16 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 public class SearchMovieActivity extends BaseMenuActivity {
-
-    private Map<String, String> searchPayload;
 
     private Boolean isMovie;
     private HashMap<String, String> movieGenres;
     private HashMap<String, String> tvGenres;
     private HashMap<String, String> imageConfigs;
     private HashMap<String, String> providers;
-
     private HashMap<String, String> apiParams;
-    private String selectedGenresString;   // Pipe-separated string of genre ids
-    private String selectedProvidersString;
-    private String startDateString;
-    private String endDateString;
-    private String minRuntimeRangeString;
-    private String maxRuntimeRangeString;
-    private String ratingString;
 
 
     @Override
@@ -51,6 +40,7 @@ public class SearchMovieActivity extends BaseMenuActivity {
         apiParams.put("minRuntimeString", "");
         apiParams.put("maxRuntimeString", "");
         apiParams.put("ratingString", "");
+        apiParams.put("watch_region", "AU");
 
 
         Intent intent = getIntent();
@@ -60,16 +50,11 @@ public class SearchMovieActivity extends BaseMenuActivity {
             tvGenres = (HashMap<String, String>) intent.getSerializableExtra("tvGenres");
             imageConfigs = (HashMap<String, String>) intent.getSerializableExtra("imageConfigs");
             providers = (HashMap<String, String>) intent.getSerializableExtra("providers");
-
         } catch (Error e) {
             Toast.makeText(this, "Could not retrieve genres", Toast.LENGTH_SHORT).show();
         }
 
         isMovie = true;
-
-        searchPayload = new HashMap<>();
-        searchPayload.put("watch_region", "AU");
-
         SearchMovieTypeFragment fragment = new SearchMovieTypeFragment();
         fragment.setOnClickListener(new FragmentClickListener(){
             @Override
@@ -78,29 +63,20 @@ public class SearchMovieActivity extends BaseMenuActivity {
             }
         });
 
-
         // Insert the fragment by replacing any existing fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.movie_content_frame, fragment)
                 .commit();
-
-        String[] keys = {
-                "sort_by",
-                "primary_release_date.gte",
-                "primary_release_date.lte",
-                "with_genres",
-                "with_watch_providers",
-                "with_runtime.gte",
-                "with_runtime.lte",
-                "vote_average.gte",
-                "vote_average.lte",
-                };
     }
 
     void handleMovieType(View v) {
         if (v.getId() == R.id.tvSelectedBtn) {
             isMovie = false;
+        } else if (v.getId() == R.id.movieSelectedBtn) {
+            isMovie = true;
+        } else {
+            return;
         }
         SearchMovieGenreFragment searchGenreFragment;
         if (isMovie) {
@@ -111,7 +87,7 @@ public class SearchMovieActivity extends BaseMenuActivity {
         searchGenreFragment.setOnClickListener(new FragmentClickListener(){
             @Override
             public void onClick(View v) {
-                retrieveGenres(v);
+                retrieveGenres();
             }
         });
 
@@ -122,9 +98,9 @@ public class SearchMovieActivity extends BaseMenuActivity {
                 .commit();
     }
 
-    void retrieveGenres(View v) {
+    void retrieveGenres() {
         HashMap<String, String> genresToConsider;
-        Set selectedGenres = new HashSet<>();
+        Set<String> selectedGenres = new HashSet<>();
         if (isMovie) {
             genresToConsider = movieGenres;
         } else {
@@ -133,7 +109,7 @@ public class SearchMovieActivity extends BaseMenuActivity {
         LinearLayout genreLayout = findViewById(R.id.genreLayout);
         CheckBox checkbox;
         for (String key: genresToConsider.keySet()) {
-            checkbox = (CheckBox) genreLayout.findViewWithTag(key);
+            checkbox = genreLayout.findViewWithTag(key);
             if (checkbox != null && checkbox.isChecked()) {
                 selectedGenres.add(key);
             }
@@ -145,7 +121,7 @@ public class SearchMovieActivity extends BaseMenuActivity {
         movieProviderFragment.setOnClickListener(new FragmentClickListener(){
             @Override
             public void onClick(View v) {
-                retrieveProviders(v);
+                retrieveProviders();
             }
         });
 
@@ -156,15 +132,13 @@ public class SearchMovieActivity extends BaseMenuActivity {
                 .commit();
     }
 
-    void retrieveProviders(View v) {
-        Set selectedProviders = new HashSet<>();
-
-        selectedProvidersString = "";
+    void retrieveProviders() {
+        Set<String> selectedProviders = new HashSet<>();
         LinearLayout genreLayout = findViewById(R.id.providerLayout);
         CheckBox checkbox;
 
         for (String key: providers.keySet()) {
-            checkbox = (CheckBox) genreLayout.findViewWithTag(providers.get(key));
+            checkbox = genreLayout.findViewWithTag(providers.get(key));
             if (checkbox != null && checkbox.isChecked()) {
                 selectedProviders.add(providers.get(key));
             }
@@ -178,7 +152,7 @@ public class SearchMovieActivity extends BaseMenuActivity {
             @Override
             public void onClick(View v) {
                 if (v.getId() == R.id.submitBtn) {
-                    retrieveYearRatingRuntimeData(v);
+                    retrieveYearRatingRuntimeData();
                 }
             }
         });
@@ -190,7 +164,7 @@ public class SearchMovieActivity extends BaseMenuActivity {
                 .commit();
     }
 
-    void retrieveYearRatingRuntimeData(View v) {
+    void retrieveYearRatingRuntimeData() {
         EditText startYear = findViewById(R.id.startYearTxt);
         EditText endYear = findViewById(R.id.endYearTxt);
         EditText minRating = findViewById(R.id.minRatingTxt);
@@ -220,40 +194,47 @@ public class SearchMovieActivity extends BaseMenuActivity {
         if ((startYearInt != null && startYearInt > currYear)
                 || (endYearInt != null && endYearInt > currYear)) {
             Toast.makeText(this, "Cannot provide year in the future", Toast.LENGTH_SHORT).show();
-        } else if (startYearInt != null && endYearInt != null && startYearInt > endYearInt) {
-            Toast.makeText(this, "Start year cannot be greater than end year", Toast.LENGTH_SHORT).show();
-        } else if (minRatingFloat != null && (minRatingFloat < 0 || minRatingFloat > 10)) {
-            Toast.makeText(this, "Rating must be between 0 and 10", Toast.LENGTH_SHORT).show();
-        } else if (minRuntimeInt != null && maxRuntimeInt != null && minRuntimeInt > maxRuntimeInt) {
-            Toast.makeText(this, "Min runtime must be greater than max runtime", Toast.LENGTH_SHORT).show();
-        } else {
-            if (minRatingString.length() > 0) {
-                apiParams.put("ratingString", "&vote_average.gte=" + minRatingString);
-            }
-            if (minRuntimeString.length() > 0) {
-                apiParams.put("minRuntimeString", "&with_runtime.gte=" + minRuntimeString);
-            }
-            if (maxRuntimeString.length() > 0) {
-                apiParams.put("minRuntimeString", "&with_runtime.lte=" + maxRuntimeString);
-            }
-
-            if (isMovie) {
-                if (startYearString.length() > 0) {
-                    apiParams.put("startDateString", "&primary_release_date.gte=" + startYearString + "-01-01");
-                }
-                if (endYearString.length() > 0) {
-                    apiParams.put("endYearString", "&primary_release_date.lte=" + endYearString + "-12-31");
-                }
-            } else {
-                if (startYearString.length() > 0) {
-                    apiParams.put("startDateString", "&first_air_date.gte=" + startYearString + "-01-01");
-                }
-                if (endYearString.length() > 0) {
-                    apiParams.put("endYearString", "&first_air_date.lte=" + endYearString + "-12-31");
-                }
-            }
-            displayShows();
+            return;
         }
+        if (startYearInt != null && endYearInt != null && startYearInt > endYearInt) {
+            Toast.makeText(this, "Start year cannot be greater than end year", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (minRatingFloat != null && (minRatingFloat < 0 || minRatingFloat > 10)) {
+            Toast.makeText(this, "Rating must be between 0 and 10", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (minRuntimeInt != null && maxRuntimeInt != null && minRuntimeInt > maxRuntimeInt) {
+            Toast.makeText(this, "Min runtime must be greater than max runtime", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!minRatingString.isEmpty()) {
+            apiParams.put("ratingString", "&vote_average.gte=" + minRatingString);
+        }
+        if (!minRuntimeString.isEmpty()) {
+            apiParams.put("minRuntimeString", "&with_runtime.gte=" + minRuntimeString);
+        }
+        if (!maxRuntimeString.isEmpty()) {
+            apiParams.put("minRuntimeString", "&with_runtime.lte=" + maxRuntimeString);
+        }
+
+        if (isMovie) {
+            if (!startYearString.isEmpty()) {
+                apiParams.put("startDateString", "&primary_release_date.gte=" + startYearString + "-01-01");
+            }
+            if (!endYearString.isEmpty()) {
+                apiParams.put("endYearString", "&primary_release_date.lte=" + endYearString + "-12-31");
+            }
+        } else {
+            if (!startYearString.isEmpty()) {
+                apiParams.put("startDateString", "&first_air_date.gte=" + startYearString + "-01-01");
+            }
+            if (!endYearString.isEmpty()) {
+                apiParams.put("endYearString", "&first_air_date.lte=" + endYearString + "-12-31");
+            }
+        }
+        displayShows();
     }
 
     void displayShows() {

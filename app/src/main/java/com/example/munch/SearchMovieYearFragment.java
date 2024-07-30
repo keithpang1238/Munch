@@ -59,30 +59,24 @@ public class SearchMovieYearFragment extends Fragment implements View.OnClickLis
         // Inflate the layout for this fragment
         View root =  inflater.inflate(R.layout.fragment_search_movie_year, container, false);
         Activity activity = getActivity();
-        root.post(new Runnable() {
-            @Override
-            public void run() {
-                EditText startYearTxt = activity.findViewById(R.id.startYearTxt);
-                EditText endYearTxt = activity.findViewById(R.id.endYearTxt);
-                EditText minTimeTxt = activity.findViewById(R.id.minTimeTxt);
-                EditText maxTimeTxt = activity.findViewById(R.id.maxTimeTxt);
+        root.post(() -> {
+            EditText startYearTxt = activity.findViewById(R.id.startYearTxt);
+            EditText endYearTxt = activity.findViewById(R.id.endYearTxt);
+            EditText minTimeTxt = activity.findViewById(R.id.minTimeTxt);
+            EditText maxTimeTxt = activity.findViewById(R.id.maxTimeTxt);
 
-                System.out.println(startYearTxt.getMeasuredWidth());
+            if (startYearTxt.getMeasuredWidth() > endYearTxt.getMeasuredWidth()) {
+                endYearTxt.setWidth(startYearTxt.getMeasuredWidth());
+            } else {
+                startYearTxt.setWidth(endYearTxt.getMeasuredWidth());
+            }
 
-                if (startYearTxt.getMeasuredWidth() > endYearTxt.getMeasuredWidth()) {
-                    endYearTxt.setWidth(startYearTxt.getMeasuredWidth());
-                } else {
-                    startYearTxt.setWidth(endYearTxt.getMeasuredWidth());
-                }
-
-                if (minTimeTxt.getMeasuredWidth() > maxTimeTxt.getMeasuredWidth()) {
-                    maxTimeTxt.setWidth(minTimeTxt.getMeasuredWidth());
-                } else {
-                    minTimeTxt.setWidth(maxTimeTxt.getMeasuredWidth());
-                }
+            if (minTimeTxt.getMeasuredWidth() > maxTimeTxt.getMeasuredWidth()) {
+                maxTimeTxt.setWidth(minTimeTxt.getMeasuredWidth());
+            } else {
+                minTimeTxt.setWidth(maxTimeTxt.getMeasuredWidth());
             }
         });
-
         return root;
     }
 

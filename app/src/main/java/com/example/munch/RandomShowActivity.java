@@ -1,9 +1,6 @@
 package com.example.munch;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
 import android.app.Dialog;
@@ -22,25 +19,13 @@ import com.android.volley.RequestQueue;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.ListenerRegistration;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,7 +57,6 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private final String TAG_IMAGE_CONFIG = "tagImageConfig";
     private final String URL_PREFIX_MOVIE = "https://api.themoviedb.org/3/discover/movie?";
     private final String URL_PREFIX_TV = "https://api.themoviedb.org/3/discover/tv?";
-    private final String URL_PREFIX_CONFIG = "https://api.themoviedb.org/3/configuration?";
     private final String API = "&api_key=" + BuildConfig.movieAPIKey;
     private final String REGION = "&watch_region=AU";
     private final String WATCH_TYPES = "&with_watch_monetization_types=free|ads|flatrate";
@@ -83,7 +67,6 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private APIHelper apiHelper;
     private Random rand;
 
-    private DBHelper dbHelper;
     private Map<String, String> imageConfigs;
     private Map<String, String> apiParams;
 
@@ -92,13 +75,9 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     private HashSet<String> unlikedMovieIDs;
     private HashSet<String> unlikedTVShowIDs;
 
-    private FirebaseAuth mAuth;
     private String userID;
-    private DocumentReference userDataDoc;
 
     private FirestoreHelper firestoreHelper;
-
-
 
 
     @Override
@@ -114,34 +93,30 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         attemptedToGetMoviePages = false;
         attemptedToGetTVPages = false;
 
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         userID = mAuth.getCurrentUser().getUid();
         firestoreHelper = new FirestoreHelper();
 
-        userDataDoc = firestoreHelper.getUserDoc(userID);
-        ListenerRegistration registration = userDataDoc.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                        if (documentSnapshot != null) {
-                            List<String> likedMovieIDs = (List<String>) documentSnapshot.get("LikedMovies");
-                            for (String movieID : likedMovieIDs) {
-                                likedMovies.put(movieID, new JSONObject());
-                            }
+        DocumentReference userDataDoc = firestoreHelper.getUserDoc(userID);
+        userDataDoc.addSnapshotListener(this, (documentSnapshot, e) -> {
+            if (documentSnapshot == null) {
+                return;
+            }
+            List<String> likedMovieIDs = (List<String>) documentSnapshot.get("LikedMovies");
+            for (String movieID : likedMovieIDs) {
+                likedMovies.put(movieID, new JSONObject());
+            }
 
-                            List<String> likedTVShowIDs = (List<String>) documentSnapshot.get("LikedTVShows");
-                            for (String tvShowID : likedTVShowIDs) {
-                                likedTVShows.put(tvShowID, new JSONObject());
-                            }
-
-                        }
-                    }
-                });
+            List<String> likedTVShowIDs = (List<String>) documentSnapshot.get("LikedTVShows");
+            for (String tvShowID : likedTVShowIDs) {
+                likedTVShows.put(tvShowID, new JSONObject());
+            }
+        });
 
 
 
         queue = Volley.newRequestQueue(this);
         apiHelper = new APIHelper();
-        dbHelper = new DBHelper(this);
         imageConfigs = new HashMap<>();
 
         getNextRandom = findViewById(R.id.getNextRandom);
@@ -187,7 +162,6 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             JSONArray poster_sizes = new JSONArray(imageConfigs.get("poster_sizes"));
             if (poster_sizes.length() > 0) {
                 url_image_prefix = imageConfigs.get("secure_base_url") + poster_sizes.getString(poster_sizes.length() - 1);
-                System.out.println(url_image_prefix);
             }
             else {
                 Toast.makeText(RandomShowActivity.this, "Using default image url", Toast.LENGTH_SHORT).show();
@@ -200,18 +174,16 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
 
 
     // Source: https://stackoverflow.com/questions/5531130/an-efficient-way-to-shuffle-a-json-array-in-java
-    private static JSONArray shuffleJsonArray (JSONArray array) throws JSONException {
+    private static void shuffleJsonArray (JSONArray array) throws JSONException {
         // Implementing Fisher–Yates shuffle
         Random rnd = new Random();
-        for (int i = array.length() - 1; i > 0; i--)
-        {
+        for (int i = array.length() - 1; i > 0; i--) {
             int j = rnd.nextInt(i + 1);
             // Simple swap
             Object object = array.get(j);
             array.put(j, array.get(i));
             array.put(i, object);
         }
-        return array;
     }
 
     private static void shuffleArray(Integer[] ar) {
@@ -231,15 +203,13 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         String URL_PREFIX;
         String pageString = "";
 
-
         if (isMovie) {
             URL_PREFIX = URL_PREFIX_MOVIE;
             if (moviePageNumbers != null && moviePageNumbers.length > 0) {
                 pageString = "&page=" + moviePageNumbers[(currMoviePage + 1) % moviePageNumbers.length].toString();
                 currMoviePage++;
             }
-        }
-        else {
+        } else {
             URL_PREFIX = URL_PREFIX_TV;
             if (tvPageNumbers != null && tvPageNumbers.length > 0) {
                 pageString = "&page=" + tvPageNumbers[(currTVPage + 1) % tvPageNumbers.length].toString();
@@ -254,12 +224,10 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             }
         }
         String url = urlBuilder.toString();
-        System.out.println(url);
-
         queue.cancelAll(TAG_SEARCH_SHOW);
 
-        StringRequest stringRequest = apiHelper.movieTVAPICall(url, this,
-            new HTTPListener() {
+        StringRequest stringRequest = apiHelper.movieTVAPICall(url,
+                new HTTPListener() {
                 @Override
                 public void onResponseReceived(String response) {
                     try {
@@ -267,42 +235,43 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
                         if ((isMovie && attemptedToGetMoviePages) || (!isMovie && attemptedToGetTVPages)) {
                             showArray = responseJSON.getJSONArray("results");
                             if (showArray.length() > 0) {
-                                showArray = shuffleJsonArray(showArray);
+                                shuffleJsonArray(showArray);
                                 replaceFragment(showArray.getJSONObject(0));
                             }
                             else {
-                                Toast.makeText(RandomShowActivity.this, "Requirements too strict ma dude", Toast.LENGTH_LONG).show();
+                                Toast.makeText(RandomShowActivity.this, "Requirements too strict", Toast.LENGTH_LONG).show();
                             }
                             if (loadingShowFetchBar != null) {
                                 loadingShowFetchBar.setVisibility(View.INVISIBLE);
                             }
+                            return;
                         }
-
-                        else if (responseJSON.has("total_pages")) {
-                            try {
-                                Integer total = responseJSON.getInt("total_pages");
-                                total = Math.min(total, MAX_PAGES);
-                                if (isMovie && !attemptedToGetMoviePages) {
-                                    attemptedToGetMoviePages = true;
-                                    if (moviePageNumbers == null) {
-                                        moviePageNumbers = generatePageNumbers(total);
-                                        currMoviePage = 1;
-                                        RandomShowActivity.this.randomIsMovie = true;
-                                        newShowFetch(true);
-
-                                    }
-                                } else if (!attemptedToGetTVPages) {
-                                    attemptedToGetTVPages = true;
-                                    if (tvPageNumbers == null){
-                                        tvPageNumbers = generatePageNumbers(total);
-                                        currTVPage = 1;
-                                        RandomShowActivity.this.randomIsMovie = false;
-                                        newShowFetch(false);
-                                    }
+                        if (!responseJSON.has("total_pages")) { // only one page of shows
+                            return;
+                        }
+                        try {
+                            int total = Math.min(responseJSON.getInt("total_pages"), MAX_PAGES);
+                            if (isMovie && !attemptedToGetMoviePages) {
+                                attemptedToGetMoviePages = true;
+                                if (moviePageNumbers == null) {
+                                    moviePageNumbers = generatePageNumbers(total);
+                                    currMoviePage = 1;
+                                    RandomShowActivity.this.randomIsMovie = true;
+                                    newShowFetch(true);
                                 }
-                            } catch (JSONException e) {
-                                Toast.makeText(RandomShowActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                                return;
                             }
+                            if (!isMovie && !attemptedToGetTVPages) {
+                                attemptedToGetTVPages = true;
+                                if (tvPageNumbers == null){
+                                    tvPageNumbers = generatePageNumbers(total);
+                                    currTVPage = 1;
+                                    RandomShowActivity.this.randomIsMovie = false;
+                                    newShowFetch(false);
+                                }
+                            }
+                        } catch (JSONException e) {
+                            Toast.makeText(RandomShowActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                         }
 
                     } catch (JSONException e) {
@@ -322,9 +291,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
                 }
             }
         );
-
         stringRequest.setTag(TAG_SEARCH_SHOW);
-
         queue.add(stringRequest);
     }
 
@@ -347,14 +314,11 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         Boolean isLiked = (currShowIsMovie && likedMovies.containsKey(currShowID)) || (!currShowIsMovie && likedTVShows.containsKey(currShowID));
 
         ShowDisplayFragment fragment = ShowDisplayFragment.newInstance(replaceDateWithYear(movieObject).toString(), randomIsMovie, isLiked);
-        fragment.setOnClickListener(new FragmentClickListener(){
-            @Override
-            public void onClick(View v) {
-                if (v.getId() == R.id.overviewTxt && isOverviewEllipsized()) {
-                    displayOverviewPopup(v, movieObject.optString("overview"));
-                } else if (v.getId() == R.id.likeButton) {
-                    handleUserLike(v);
-                }
+        fragment.setOnClickListener(v -> {
+            if (v.getId() == R.id.overviewTxt && isOverviewEllipsized()) {
+                displayOverviewPopup(v, movieObject.optString("overview"));
+            } else if (v.getId() == R.id.likeButton) {
+                handleUserLike();
             }
         });
         // Insert the fragment by replacing any existing fragment
@@ -365,7 +329,7 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
         numViewed++;
     }
 
-    void handleUserLike(View v) {
+    void handleUserLike() {
         ImageView likeButton = findViewById(R.id.likeButton);
         if (likeButton.getTag() != null && likeButton.getTag().equals(R.drawable.like_button)) {
             // User is liking the movie or tv show
@@ -395,9 +359,9 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
             if (currShowID == null) {
                 Toast.makeText(apiHelper, "Show has no id", Toast.LENGTH_SHORT).show();
             }
-        } else {
-            Toast.makeText(this, "Could not get movie deets", Toast.LENGTH_SHORT).show();
+            return;
         }
+        Toast.makeText(this, "Could not get movie details", Toast.LENGTH_SHORT).show();
     }
 
     public static Integer[] generatePageNumbers(Integer total) {
@@ -411,19 +375,19 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.getNextRandom) {
-            if (showArray != null && numViewed < showArray.length()) {
-                try {
-                    replaceFragment(showArray.getJSONObject(numViewed));
-                } catch (JSONException e) {
-                    Toast.makeText(RandomShowActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            }
-            else {
-                loadingShowFetchBar.setVisibility(View.VISIBLE);
-                newShowFetch(getIsMovie());
-            }
+        if (view.getId() != R.id.getNextRandom) {
+            return;
         }
+        if (showArray != null && numViewed < showArray.length()) {
+            try {
+                replaceFragment(showArray.getJSONObject(numViewed));
+            } catch (JSONException e) {
+                Toast.makeText(RandomShowActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
+        loadingShowFetchBar.setVisibility(View.VISIBLE);
+        newShowFetch(getIsMovie());
     }
 
     private JSONObject replaceDateWithYear(JSONObject obj) {
@@ -446,34 +410,34 @@ public class RandomShowActivity extends BaseMenuActivity implements View.OnClick
     }
 
     void displayOverviewPopup(View v, String overview) {
-        if (v.getId() == R.id.overviewTxt) {
-
-            Dialog dialog = new AlertDialog.Builder(RandomShowActivity.this)
-                    .setMessage(overview).show();
-
-            WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
-            lp.copyFrom(dialog.getWindow().getAttributes());
-
-            int width = (int)(getResources().getDisplayMetrics().widthPixels*0.90);
-            int height = (int)(getResources().getDisplayMetrics().heightPixels*0.50);
-
-
-            lp.dimAmount=0.8f;
-            dialog.getWindow().setAttributes(lp);
-            dialog.getWindow().setLayout(width, height);
-            dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-
+        if (v.getId() != R.id.overviewTxt) {
+            return;
         }
+
+        Dialog dialog = new AlertDialog.Builder(RandomShowActivity.this)
+                .setMessage(overview).show();
+
+        WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+
+        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.90);
+        int height = (int)(getResources().getDisplayMetrics().heightPixels*0.50);
+
+        lp.dimAmount=0.8f;
+        dialog.getWindow().setAttributes(lp);
+        dialog.getWindow().setLayout(width, height);
+        dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+
     }
 
     Boolean isOverviewEllipsized() {
         TextView overviewTxt = findViewById(R.id.overviewTxt);
         Layout l = overviewTxt.getLayout();
-        if (l != null) {
-            int lines = l.getLineCount();
-            return lines > 0 && l.getEllipsisCount(lines-1) > 0;
+        if (l == null) {
+            return false;
         }
-        return false;
+        int lines = l.getLineCount();
+        return lines > 0 && l.getEllipsisCount(lines-1) > 0;
     }
 
     @Override

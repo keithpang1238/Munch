@@ -34,7 +34,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_main);
 
         Objects.requireNonNull(this.getSupportActionBar()).hide();
-
         mAuth = FirebaseAuth.getInstance();
 
         Button loginBtn = findViewById(R.id.loginBtn);
@@ -52,11 +51,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View view) {
-        switch(view.getId()) {
-            case R.id.loginBtn:
-                verifyCredentials();
-            default:
-                break;
+        if (view.getId() == R.id.loginBtn) {
+            verifyCredentials();
         }
     }
 
@@ -68,24 +64,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             usernameEdit.setError("Email is required");
             return;
         }
-
         if (TextUtils.isEmpty(password)) {
             passwordEdit.setError("Password is required");
             return;
         }
 
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(
-            new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(LoginActivity.this, "Logged in successfully", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                    } else {
-                        Toast.makeText(LoginActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                        passwordEdit.setText("");
-                    }
+            task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(LoginActivity.this, "Logged in successfully", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                    return;
                 }
+                Exception exception = task.getException();
+                String errorMessage;
+                if (exception == null) {
+                    errorMessage = "Could not login";
+                } else {
+                    errorMessage = exception.getMessage();
+                }
+                Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                passwordEdit.setText("");
             }
         );
     }

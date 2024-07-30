@@ -3,12 +3,7 @@ package com.example.munch;
 public class ShowModel {
 
     private String Name;
-    private String Overview;
-
-    private ShowModel() {
-
-    }
-
+    private final String Overview;
 
     private ShowModel(String name, String overview) {
         this.Name = name;
@@ -25,9 +20,5 @@ public class ShowModel {
 
     public String getOverview() {
         return Overview;
-    }
-
-    public void setOverview(String overview) {
-        Overview = overview;
     }
 }

@@ -4,7 +4,6 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,14 +66,16 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            try {
-                showJSONObject = new JSONObject(getArguments().getString(ARG_PARAM1));
-                isMovie = Boolean.parseBoolean(getArguments().getString(ARG_PARAM2));
-                isLiked = Boolean.parseBoolean(getArguments().getString(ARG_PARAM3));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        Bundle args = getArguments();
+        if (args == null) {
+            return;
+        }
+        try {
+            showJSONObject = new JSONObject(args.getString(ARG_PARAM1));
+            isMovie = Boolean.parseBoolean(args.getString(ARG_PARAM2));
+            isLiked = Boolean.parseBoolean(args.getString(ARG_PARAM3));
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -136,7 +137,7 @@ public class ShowDisplayFragment extends Fragment implements View.OnClickListene
 
     private void setText(TextView textView, String key, String altText) {
         String textToDisplay = showJSONObject.optString(key);
-        if (textToDisplay.length() > 0) {
+        if (!textToDisplay.isEmpty()) {
             textView.setText(textToDisplay);
         } else {
             textView.setText(altText);

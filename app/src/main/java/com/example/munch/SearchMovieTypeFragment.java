@@ -40,7 +40,6 @@ public class SearchMovieTypeFragment extends Fragment implements View.OnClickLis
         }
     }
 
-
     public void setOnClickListener(FragmentClickListener listener)
     {
         this.listener = listener;

@@ -18,17 +18,12 @@ import android.widget.TextView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+
 
 public class FavouritesFragment extends Fragment {
 
@@ -47,7 +42,6 @@ public class FavouritesFragment extends Fragment {
         firestoreHelper = new FirestoreHelper();
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -59,9 +53,7 @@ public class FavouritesFragment extends Fragment {
         FirestoreRecyclerOptions<ShowModel> options = new FirestoreRecyclerOptions.Builder<ShowModel>()
                 .setQuery(query, ShowModel.class).build();
         adapter = new FirestoreRecyclerAdapter<ShowModel, ShowsViewHolder>(options) {
-
             @NonNull
-            @NotNull
             @Override
             public ShowsViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
                 View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.show_list_item_single, parent, false);
@@ -81,15 +73,13 @@ public class FavouritesFragment extends Fragment {
         mFirestoreList.setLayoutManager(new LinearLayoutManager(this.getContext()));
         mFirestoreList.setAdapter(adapter);
 
-
-
         return root;
     }
 
     private class ShowsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-        private TextView showName;
-        private Button deleteLikeButton;
+        private final TextView showName;
+        private final Button deleteLikeButton;
         private String overview;
 
         public ShowsViewHolder(@NonNull @NotNull View itemView) {
